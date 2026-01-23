@@ -195,3 +195,5 @@ This project is licensed under the MIT License - see the [LICENSE] file for deta
 ---
 
 **Made with ❤️ by the Minecraft community**
+Telegram: @DevMegican1
+Discord: minecrafter_22
