@@ -459,70 +459,83 @@ public class MinecraftProtocol {
         
         return false;
     }
-    
+
     private static boolean analyzeDisconnectMessage(String message) {
-        String lowerMessage = message.toLowerCase();
-        
-        // Whitelist keywords (English and Russian)
-        String[] whitelistIndicators = {
-            // English
-            "whitelist", "white-list", "white list",
-            "not whitelisted", "you are not whitelisted",
-            "not on the whitelist", "not in whitelist",
-            "server is whitelisted", "whitelisted players",
-            "not allowed", "you are not allowed",
-            "access denied", "join denied",
-            "not authorized", "authorization required",
-            "not permitted", "permission denied",
-            
-            // Russian
-            "белый список", "белом списке", "вайтлист",
-            "не в белом списке", "нету в белом списке",
-            "нет в белом списке", "вас нет в белом",
-            "вас нету в белом", "отсутствуете в белом",
-            "доступ запрещен", "нет доступа",
-            "требуется авторизация", "не авторизован",
-            "не разрешен", "запрещён вход"
+        String lower = message.toLowerCase();
+
+        String[] whitelistRoots = {
+
+                "whitelist", "white-list", "white list", "whitelis",
+                "not allow", "not allowe", "not permit", "not permitte",
+                "deny", "deni", "denied",
+                "restrict", "restriction",
+                "forbid", "forbidden",
+                "unauthor", "unauthoriz",
+                "authoriz", "authorisat",
+                "access den", "access forbid",
+                "join den", "join forbid",
+                "not member", "only member",
+                "private serv", "private server",
+                "you cannot", "you can't",
+                "not invited", "invite only",
+
+                "бел",
+                "вайт",
+                "спис",
+                "доступ",
+                "запрещ",
+                "разреш",
+                "не разреш",
+                "нет доступ",
+                "доступ закр",
+                "авториз",
+                "не авториз",
+                "огранич",
+                "приват",
+                "закрыт",
+                "вход запрещ",
+                "не пуск",
+                "только для",
+                "нет прав",
+                "отказано"
         };
-        
-        for (String indicator : whitelistIndicators) {
-            if (lowerMessage.contains(indicator)) {
-                System.out.println("[WhiteList Check] ✓ MATCH: '" + indicator + "'");
+
+        for (String root : whitelistRoots) {
+            if (lower.contains(root)) {
+                System.out.println("[WhiteList Check] ✓ ROOT MATCH: '" + root + "'");
                 return true;
             }
         }
-        
-        // Check JSON structure
+
         if (message.contains("{") && message.contains("}")) {
             try {
                 JSONObject json = new JSONObject(message);
-                
-                // Check translate key
+
                 if (json.has("translate")) {
-                    String translate = json.getString("translate");
-                    if (translate.contains("whitelist") || 
-                        translate.equals("multiplayer.disconnect.not_whitelisted")) {
-                        System.out.println("[WhiteList Check] ✓ JSON translate: " + translate);
-                        return true;
+                    String translate = json.getString("translate").toLowerCase();
+                    for (String root : whitelistRoots) {
+                        if (translate.contains(root)) {
+                            System.out.println("[WhiteList Check] ✓ JSON TRANSLATE ROOT: '" + root + "'");
+                            return true;
+                        }
                     }
                 }
-                
-                // Check text field
+
                 String fullText = extractTextFromJson(json).toLowerCase();
-                for (String indicator : whitelistIndicators) {
-                    if (fullText.contains(indicator)) {
-                        System.out.println("[WhiteList Check] ✓ JSON text: '" + indicator + "'");
+                for (String root : whitelistRoots) {
+                    if (fullText.contains(root)) {
+                        System.out.println("[WhiteList Check] ✓ JSON TEXT ROOT: '" + root + "'");
                         return true;
                     }
                 }
-                
-            } catch (Exception e) {
-                // Not valid JSON
+
+            } catch (Exception ignored) {
             }
         }
-        
+
         return false;
     }
+
     
     private static void writeString(DataOutputStream out, String string) throws IOException {
         byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
